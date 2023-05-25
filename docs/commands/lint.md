@@ -7,7 +7,7 @@ Redocly CLI can identify and report on problems found in OpenAPI definitions. Th
 The `lint` command reports on problems and executes preprocessors and rules. Unlike the `bundle` command, `lint` doesn't execute decorators.
 
 :::success Tip
-To learn more about preprocessors and rules, refer to the [custom plugins](../resources/custom-plugins.md) page.
+To learn more about configuring rules for linting, visit the [rules documentation](../../rules.md).
 :::
 
 ## Usage
@@ -38,11 +38,11 @@ redocly lint --version
 
 ## Examples
 
-### Apis
+### Lint APIs
 
 The `lint` command behaves differently depending on how you pass apis to it and whether the [configuration file](#custom-configuration-file) exists.
 
-#### Pass apis directly
+#### Pass an API directly
 
 ```bash
 redocly lint openapi/openapi.yaml
@@ -52,7 +52,7 @@ In this case, `lint` will validate the definition(s) passed to the command. The 
 
 The `apis` argument can also use any glob format supported by your file system. For example, `redocly lint ./root-documents/*.yaml`.
 
-#### Pass apis via configuration file
+#### An API from the configuration file
 
 Instead of full paths, you can use names listed in the `apis` section of your Redocly configuration file.
 
@@ -68,9 +68,9 @@ apis:
 
 In this case, after resolving the path behind the `core@v1` name (see the `Configuration file` tab), `lint` will validate the `definition.json` file. The presence of the Redocly configuration file is mandatory.
 
-#### Empty apis
+#### All configured APIs
 
-You can omit apis completely when executing the `lint` command.
+You can omit apis completely when executing the `lint` command to check all APIs defined in the configuration file.
 
 ```bash Command
 redocly lint
@@ -102,18 +102,7 @@ By default, the CLI tool looks for the [Redocly configuration file](/docs/cli/co
 redocly lint --config=./another/directory/config.yaml
 ```
 
-### Extend configuration
-
-The `--extends` option allows you to extend the existing configuration. This option accepts one of the following values: `minimal`, `recommended`, `all`. Each of the values is a base set of rules that the lint command will use. You can further modify this set in cases when you want to have your own set of rules based on the existing one, including particular rules that cover your specific needs.
-
-:::warning Important
-
-When you run the `lint` command without a configuration file, it uses the `extends: [recommended]` by default.
-However, if you have a configuration file, but it doesn't include any rules or extends configuration, the `lint` command shows an error.
-
-:::
-
-### Format
+### Format lint output
 
 #### Codeframe (default)
 
@@ -156,7 +145,59 @@ openapi/core.yaml:
 
 In this format, `lint` shows the file name, line number, and column where the problem occurred. However, the output is compressed and omits other contexts and suggestions.
 
+##### JSON
+
+It can be useful to get the output in JSON format to be processed by other tools.
+
+```bash Command
+redocly lint --format=json
+```
+
+```bash Output
+{
+  "totals": {
+    "errors": 1,
+    "warnings": 1,
+    "ignored": 0
+  },
+  "version": "1.0.0-beta.84",
+  "problems": [
+    {
+      "ruleId": "spec",
+      "severity": "error",
+      "message": "Property `operationIdentifier` is not expected here.",
+      "suggest": [],
+      "location": [
+        {
+          "source": {
+            "ref": "mydefinition.yaml"
+          },
+          "pointer": "#/paths/~1pathItem/post/operationIdentifier",
+          "reportOnKey": true
+        }
+      ]
+    },
+    {
+      "ruleId": "operation-operationId",
+      "severity": "warn",
+      "message": "Operation object should contain `operationId` field.",
+      "location": [
+        {
+          "source": {
+            "ref": "mydefinition.yaml"
+          },
+          "pointer": "#/paths/~1pathItem/post/operationId",
+          "reportOnKey": true
+        }
+      ],
+      "suggest": []
+    }
+  ]
+}
+```
 #### Checkstyle
+
+The `lint` command also supports the [Checkstyle](https://checkstyle.org/) XML report format.
 
 ```bash Command
 redocly lint --format=checkstyle
@@ -173,12 +214,11 @@ redocly lint --format=checkstyle
 </checkstyle>
 ```
 
-In this format, `lint` uses the [Checkstyle](https://checkstyle.org/) XML report format.
 Due to the limitations of this format, only file name, line, column, severity,
 and rule ID (in the `source` attribute) are included. All other information is
 omitted.
 
-### Max problems
+### Limit the problem count
 
 With the `--max-problems` option, you can limit the number of problems displayed in the command output. If the number of detected problems exceeds the specified threshold, the remaining problems are hidden under the "spoiler message" that lets you know how many problems were hidden.
 
@@ -190,6 +230,8 @@ redocly lint --max-problems 200
 ...
 < ... 2 more problems hidden > increase with `--max-problems N`
 ```
+
+The default value for `max-problems` is 100.
 
 ### Generate ignore file
 
