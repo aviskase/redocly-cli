@@ -31,14 +31,14 @@ redocly lint --version
 | --generate-ignore-file | boolean  | [Generate ignore file](#generate-ignore-file).                                                                                     |
 | --help                 | boolean  | Show help.                                                                                                                         |
 | --lint-config          | string   | Specify the severity level for the configuration file. <br/> **Possible values:** `warn`, `error`, `off`. Default value is `warn`. |
-| --max-problems         | integer  | Truncate output to display the specified [maximum number of problems](#max-problems).                                              |
+| --max-problems         | integer  | Truncate output to display the specified [maximum number of problems](#max-problems). Default value is 100.                        |
 | --skip-preprocessor    | [string] | Ignore certain preprocessors. See the [Skip preprocessor or rule section](#skip-preprocessor-or-rule) below.                       |
 | --skip-rule            | [string] | Ignore certain rules. See the [Skip preprocessor or rule section](#skip-preprocessor-or-rule) below.                               |
 | --version              | boolean  | Show version number.                                                                                                               |
 
 ## Examples
 
-### Lint APIs
+### <a id="apis"></a>Lint APIs
 
 The `lint` command behaves differently depending on how you pass apis to it and whether the [configuration file](#custom-configuration-file) exists.
 
@@ -102,7 +102,15 @@ By default, the CLI tool looks for the [Redocly configuration file](/docs/cli/co
 redocly lint --config=./another/directory/config.yaml
 ```
 
-### Format lint output
+### <a name="format"></a>Format lint output
+
+The standard codeframe output format works well in most situations, but `redocly` can also produce output to integrate with other tools.
+
+:::warning Lint one API at a time
+
+Some formats, such as CheckStyle or JSON, don't work well when mulitple APIs are linted in a single command. Try linting each API separately when you pass the command output to another tool.
+
+:::
 
 #### Codeframe (default)
 
@@ -218,7 +226,7 @@ Due to the limitations of this format, only file name, line, column, severity,
 and rule ID (in the `source` attribute) are included. All other information is
 omitted.
 
-### Limit the problem count
+### <a id="max-problems"></a>Limit the problem count
 
 With the `--max-problems` option, you can limit the number of problems displayed in the command output. If the number of detected problems exceeds the specified threshold, the remaining problems are hidden under the "spoiler message" that lets you know how many problems were hidden.
 
@@ -230,8 +238,6 @@ redocly lint --max-problems 200
 ...
 < ... 2 more problems hidden > increase with `--max-problems N`
 ```
-
-The default value for `max-problems` is 100.
 
 ### Generate ignore file
 
